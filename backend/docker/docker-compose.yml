@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: devconnect_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: devconnect_user
+      POSTGRES_PASSWORD: devconnect_pass
+      POSTGRES_DB: devconnect_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: devconnect_app
+    restart: on-failure
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "postgresql://devconnect_user:devconnect_pass@postgres:5432/devconnect_db"
+      JWT_SECRET: "change_me_in_prod"
+      PORT: "5000"
+    ports:
+      - "5000:5000"
+    command: sh -c "npx prisma generate && npm run build && node dist/app.js"
+
+volumes:
+  pgdata:

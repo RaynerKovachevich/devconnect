@@ -17,3 +17,5 @@ yarn-error.log*
 # Optional
 coverage/
 *.local
+
+/src/generated/prisma
