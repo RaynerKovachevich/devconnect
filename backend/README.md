@@ -1,11 +1,12 @@
 # DevConnect Backend
 
-Simple Node + TypeScript backend for DevConnect.
+Type-safe Express backend for DevConnect with JWT auth and Prisma.
 
 What this repo contains
-- Express + TypeScript app (src/)
-- Simple in-memory user store (services) — useful for prototyping
-- Routes in `src/controllers`, business logic in `src/services`, models in `src/models`
+- Express + TypeScript app in `src/`
+- Prisma ORM connected to PostgreSQL (see `docker/` for dev compose setup)
+- Authentication flow with bcrypt password hashing and JWT tokens
+- Modular controllers/services/models structure
 
 Quick start (Windows PowerShell)
 1. Install dependencies
@@ -14,13 +15,19 @@ Quick start (Windows PowerShell)
 npm install
 ```
 
-2. Run in development (hot-reload)
+2. Ensure the database is available (e.g. `docker compose up -d` from the repo root) and run migrations
+
+```powershell
+npx prisma migrate deploy
+```
+
+3. Run in development (hot-reload)
 
 ```powershell
 npm run dev
 ```
 
-3. Build for production
+4. Build for production
 
 ```powershell
 npm run build
@@ -28,11 +35,20 @@ npm start
 ```
 
 Environment
-- Create a `.env` file in the project root for configuration (e.g. `PORT=5000`).
+- Copy `.env` (or create `.env.local`) with `DATABASE_URL`, `JWT_SECRET`, and `PORT` values before starting the app.
 
 Notes
-- The user store is currently in-memory and ephemeral. When ready for production, replace it with a persistent database (Postgres) and make services async.
-- Passwords are stored as bcrypt hashes (do not store plain-text passwords).
+- Prisma expects a reachable PostgreSQL instance; the included compose file exposes `devconnect_db` with seeded credentials.
+- Passwords are stored as bcrypt hashes; never persist plain text.
+- Error handling is centralized via `src/middleware/errorHandler.ts`.
+
+Project TODO
+- [x] Centralize error handling middleware
+- [x] Expose `POST /auth/register` alongside login
+- [ ] Publish `.env.example` with documented variables
+- [x] Document API endpoints (OpenAPI/Postman)
+- [ ] Add automated tests and CI pipeline
+- [ ] Harden security configuration (CORS, rate limiting, production logging)
 
 Pushing to GitHub (manual)
 1. Create a new repository on GitHub (via the website). Do NOT initialize it with a README — you'll push your local repo.
@@ -51,10 +67,3 @@ git push -u origin main
 ```
 
 Or use the included helper `publish-to-github.ps1` which will ask for the remote URL and push for you.
-
-Next steps (recommended)
-- Add input validation (zod/joi) and centralized error handling.
-- Replace the in-memory store with a DB-backed repository and convert services to async. Consider the refactor to a repository pattern (I can implement that for you).
-- Add tests and CI pipeline.
-
-If you want, I can now implement the repository abstraction (in-memory async repo) so swapping to Postgres later is frictionless.
