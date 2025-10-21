@@ -22,6 +22,15 @@ router.get("/:id", async (req: Request, res: Response) => {
     res.json(sanitizeUser(user));
 });
 
+// GET /users/me - return current user's profile (protected)
+router.get('/me', requireAuth, async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    const user = await getUserById(Number(userId));
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(sanitizeUser(user));
+});
+
 // POST /users - create a new user (password hashed, returns sanitized user)
 router.post("/", async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
