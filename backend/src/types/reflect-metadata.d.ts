@@ -1,1 +1,1 @@
-declare module 'reflect-metadata';
+// Left intentionally empty.
