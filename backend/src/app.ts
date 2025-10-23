@@ -1,5 +1,4 @@
-import "reflect-metadata"; // required for class-transformer/class-validator decorators
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { readFileSync } from "fs";
@@ -20,22 +19,25 @@ app.use(express.json());
 
 // Swagger / OpenAPI
 const openApiPath = path.resolve(process.cwd(), "docs/openapi.yaml");
-const openApiDocument = YAML.parse(readFileSync(openApiPath, "utf8"));
+let openApiDocument: Record<string, unknown> | null = null;
 
-// Swagger UI en /docs
-  app.use(
-    '/docs',
-    (req: Request, _res: Response, next: NextFunction) => {
-      console.log(`[docs] ${req.method} ${req.originalUrl}`);
-      next();
-    },
-    swaggerUi.serve,
-    swaggerUi.setup(openApiDocument, { explorer: true })
-  );
+try {
+  openApiDocument = YAML.parse(readFileSync(openApiPath, "utf8")) as Record<string, unknown>;
+} catch (err) {
+  console.warn('Swagger spec not loaded:', err);
+}
+
+if (openApiDocument) {
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument, { explorer: true }));
+}
 
 // Endpoint para descargar YAML
 app.get("/docs/openapi.yaml", (_req: Request, res: Response) => {
-  res.sendFile(openApiPath);
+  res.sendFile(openApiPath, err => {
+    if (err) {
+      res.status(404).json({ message: "OpenAPI spec not found" });
+    }
+  });
 });
 
 // Routers
