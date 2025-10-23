@@ -1,22 +1,22 @@
-# Use official Node image
+# Base image with Node 20
 FROM node:20-alpine
 
-# Create app directory
+# Working directory inside the container
 WORKDIR /usr/src/app
 
-# Install dependencies
+# Install dependencies first (leverages Docker layer cache)
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install
 
-# Copy source
+# Copy the rest of the source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client and compile TypeScript
 RUN npx prisma generate
+RUN npm run build
 
-# Build TypeScript (optional if you run compiled output)
-RUN npm run build || true
-
+# Expose API port
 EXPOSE 5000
 
-CMD ["node", "dist/app.js"]
+# Start the compiled app
+CMD ["npm", "run", "start"]
