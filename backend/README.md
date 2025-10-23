@@ -3,10 +3,11 @@
 Type-safe Express backend for DevConnect with JWT auth and Prisma.
 
 What this repo contains
-- Express + TypeScript app in `src/`
-- Prisma ORM connected to PostgreSQL (see `docker/` for dev compose setup)
-- Authentication flow with bcrypt password hashing and JWT tokens
-- Modular controllers/services/models structure
+- Express + TypeScript API (clean controller/service layout)
+- Prisma ORM backed by PostgreSQL (via `docker/docker-compose.yml`)
+- JWT authentication with bcrypt password hashing
+- OpenAPI spec in `docs/openapi.yaml` rendered through Swagger UI (`/docs`)
+- Containerized runtime with Dockerfile + Docker Compose
 
 Quick start (Windows PowerShell)
 1. Install dependencies
@@ -35,17 +36,30 @@ npm start
 ```
 
 Environment
-- Copy `.env` (or create `.env.local`) with `DATABASE_URL`, `JWT_SECRET`, and `PORT` values before starting the app.
+- Copy `.env.example` to `.env` and adjust values if needed. Defaults assume Postgres from `docker/docker-compose.yml` and expose the API on port `5001` (so it doesn’t clash with the Docker container).
+
+Run with Docker
+1. Build and start the stack: `docker compose -f docker/docker-compose.yml up --build`
+2. Containers expose the API on `http://localhost:5000`. When running the Node server locally (`npm run dev`), it listens on `http://localhost:5001` by default.
+3. Swagger UI is available on `/docs` for both approaches.
+4. Stop containers: `docker compose -f docker/docker-compose.yml down`
+
+API endpoints
+- `POST /auth/register` → create account, receive JWT + public user
+- `POST /auth/login` → authenticate existing user, receive JWT + public user
+- `GET /users/me` → current profile (requires `Authorization: Bearer <token>`)
+- `GET /health` → health probe for monitoring or docker-compose readiness
 
 Notes
 - Prisma expects a reachable PostgreSQL instance; the included compose file exposes `devconnect_db` with seeded credentials.
 - Passwords are stored as bcrypt hashes; never persist plain text.
 - Error handling is centralized via `src/middleware/errorHandler.ts`.
+- Swagger UI is mounted once at startup, so docs stay in sync with Git revisions.
 
 Project TODO
 - [x] Centralize error handling middleware
 - [x] Expose `POST /auth/register` alongside login
-- [ ] Publish `.env.example` with documented variables
+- [x] Publish `.env.example` with documented variables
 - [x] Document API endpoints (OpenAPI/Postman)
 - [ ] Add automated tests and CI pipeline
 - [ ] Harden security configuration (CORS, rate limiting, production logging)
