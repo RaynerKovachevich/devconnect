@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 // Basic auth check; replace with real token validation later.
 const isAuthenticated = () => {
@@ -18,7 +19,8 @@ const Home: React.FC = () => (
   <div style={{ padding: 24 }}>
     <h1>DevConnect</h1>
     <p>
-      Welcome! Go to <Link to='/login'>Login</Link> to continue.
+      Welcome! Go to <Link to='/login'>Login</Link> or{' '}
+      <Link to='/register'>Register</Link> to continue.
     </p>
   </div>
 );
@@ -44,6 +46,7 @@ const App: React.FC = () => {
     <Routes>
       <Route path='/' element={<Home />} />
       <Route path='/login' element={<Login />} />
+  <Route path='/register' element={<Register />} />
       {/* Private route */}
       <Route
         path='/dashboard'

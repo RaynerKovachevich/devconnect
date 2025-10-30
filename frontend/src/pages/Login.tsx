@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from '../layouts/AuthLayout';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5000';
 
@@ -48,66 +49,51 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 420,
-        margin: '48px auto',
-        padding: 24,
-        border: '1px solid #eee',
-        borderRadius: 8,
-      }}
+    <AuthLayout
+      title='Welcome back'
+      subtitle='Access your DevConnect dashboard by signing in'
+      footer={
+        <span>
+          Don't have an account? <Link to='/register'>Create one</Link>
+        </span>
+      }
     >
-      <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <label style={{ display: 'block', marginTop: 12 }}>
-          Email
+        <div className='auth-field'>
+          <label htmlFor='email'>Email</label>
           <input
+            id='email'
+            className='auth-input'
             type='email'
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder='Enter your email'
+            placeholder='you@example.com'
             required
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: 8,
-              marginTop: 6,
-            }}
+            autoComplete='email'
           />
-        </label>
+        </div>
 
-        <label style={{ display: 'block', marginTop: 12 }}>
-          Password
+        <div className='auth-field'>
+          <label htmlFor='password'>Password</label>
           <input
+            id='password'
+            className='auth-input'
             type='password'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            placeholder='Enter your password'
+            placeholder='••••••••'
             required
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: 8,
-              marginTop: 6,
-            }}
+            autoComplete='current-password'
           />
-        </label>
+        </div>
 
-        {error && <p style={{ color: 'crimson', marginTop: 12 }}>{error}</p>}
+        {error ? <p className='auth-error'>{error}</p> : null}
 
-        <button
-          type='submit'
-          disabled={loading}
-          style={{ marginTop: 16, padding: '8px 12px' }}
-        >
-          {loading ? 'Logging in…' : 'Login'}
+        <button className='auth-button' type='submit' disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-
-      <p style={{ marginTop: 12 }}>
-        Don't have an account? <a href='/register'>Register</a>
-      </p>
-    </div>
+    </AuthLayout>
   );
 };
 
