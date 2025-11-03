@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
-
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5000';
+import InputField from '../components/ui/InputField';
+import Button from '../components/ui/Button';
+import { login } from '../services/auth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,40 +11,29 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [success, setSuccess] = useState<string | null>(null);
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.state?.fromRegistration) {
+      setSuccess('Account created successfully. You can sign in now.');
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    setSuccess(null);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data?.detail || 'Login failed');
-        setLoading(false);
-        return;
-      }
-
-      const token = data?.access_token ?? data?.token;
-      if (!token) {
-        setError('No token received from server');
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem('devconnect_token', token);
+      await login({ email, password });
       setLoading(false);
       navigate('/dashboard');
     } catch (err) {
-      setError('Network error');
+      setError(err instanceof Error ? err.message : 'Network error');
       setLoading(false);
     }
   };
@@ -59,39 +49,36 @@ const Login: React.FC = () => {
       }
     >
       <form onSubmit={handleSubmit}>
-        <div className='auth-field'>
-          <label htmlFor='email'>Email</label>
-          <input
-            id='email'
-            className='auth-input'
-            type='email'
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder='you@example.com'
-            required
-            autoComplete='email'
-          />
-        </div>
+        <InputField
+          id='email'
+          label='Email'
+          type='email'
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder='you@example.com'
+          required
+          autoComplete='email'
+        />
 
-        <div className='auth-field'>
-          <label htmlFor='password'>Password</label>
-          <input
-            id='password'
-            className='auth-input'
-            type='password'
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder='••••••••'
-            required
-            autoComplete='current-password'
-          />
-        </div>
+        <InputField
+          id='password'
+          label='Password'
+          type='password'
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          placeholder='••••••••'
+          required
+          autoComplete='current-password'
+        />
 
         {error ? <p className='auth-error'>{error}</p> : null}
+        {success ? (
+          <p style={{ color: '#16a34a', fontSize: '0.9rem' }}>{success}</p>
+        ) : null}
 
-        <button className='auth-button' type='submit' disabled={loading}>
+        <Button type='submit' disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
-        </button>
+        </Button>
       </form>
     </AuthLayout>
   );
