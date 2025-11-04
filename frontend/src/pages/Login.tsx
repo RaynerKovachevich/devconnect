@@ -71,9 +71,15 @@ const Login: React.FC = () => {
           autoComplete='current-password'
         />
 
-        {error ? <p className='auth-error'>{error}</p> : null}
+        {error ? (
+          <p className='auth-error' role='alert'>
+            {error}
+          </p>
+        ) : null}
         {success ? (
-          <p style={{ color: '#16a34a', fontSize: '0.9rem' }}>{success}</p>
+          <p className='auth-feedback auth-feedback--success' role='status' aria-live='polite' aria-atomic='true'>
+            {success}
+          </p>
         ) : null}
 
         <Button type='submit' disabled={loading}>
